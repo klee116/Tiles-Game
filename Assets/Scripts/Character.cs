@@ -4,23 +4,33 @@ using UnityEngine;
 
 public class Character : MonoBehaviour
 {
+    public int Health{set;get;} 
     public int CurrentX{set;get;}
     public int CurrentY{set;get;}
+    public int index{set;get;}
     public byte maxHeight{set;get;}
     public byte maxWidth{set;get;}
     public byte speed{set;get;}
     public byte Team;
-    //public bool turn;
     public bool [,] moves{set;get;}
 
-
+    public ProgressBar pb;
     //public void Character
+
+    public int getIndex()
+    {
+        return index;
+    }
 
     public void SetPosition(int x, int y)
     {
         CurrentX = x; CurrentY = y;
     }
     
+    public void SetIndex(int x)
+    {
+        index = x;
+    }
     public void SetDimensions(byte H, byte W)
     {
         maxHeight = H; maxWidth = W;
@@ -70,6 +80,12 @@ public class Character : MonoBehaviour
     public void PrintCoordinates()
     {
         //Debug.Log("x = " + CurrentX + " y = " + CurrentY);
+    }
+
+    public void SetHealth(int x)
+    {
+        Health = x;
+        //pb.BarValue = x;
     }
 
 }

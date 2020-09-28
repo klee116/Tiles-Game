@@ -1,12 +1,15 @@
-﻿using System.Collections;
+﻿//FIXME ???SWitching back and forth instantly dun,nowhuy
+                //System.Threading.Thread.Sleep(1000)
+                //MOVE CHARACTERS FUNCTION SHOULD HANDLE THE POLLING BECAUSE WAIT CLICK IS CALLED EVERY REFRESH
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance{set;get;}
-    private bool[,] allowedMoves{set;get;}
-
+    private bool[,] allowedMoves{set;get;} 
     public Character[] Characters{set; get;}
     private Character selectedCharacter;
     public BoardHighlights xxx;
@@ -22,6 +25,10 @@ public class BoardManager : MonoBehaviour
     public List<GameObject> playerCharPrefabs;
     private List<GameObject> activePlayerChar = new List<GameObject>();
 
+    public ProgressBar[] PBS{set;get;}
+    public ProgressBar pb1, pb2;
+
+
     private void Start()
     {   
        // Debug.Log("GAME STARTED");
@@ -32,43 +39,49 @@ public class BoardManager : MonoBehaviour
         xxx = BoardHighlights.Instance;
         SpawnAllPlayers();
         selectedCharacter = Characters[0];
-       
-
     }
 
     private void Update()
     {
-        Debug.Log("1");
         BoardHighlights.Instance.Hidehighlights();
-        //Debug.Log("2");
         UpdateSelection();
-        //Debug.Log("3");
         DrawBoard();
-        //Debug.Log("4");
-        DisplayPlayerTurn();
-        //Debug.Log("5");
+        UpdateHealth();
         waitClick();
-        //Debug.Log("6");
+        //ReceivePlayerActions();
     }
+
+    struct input
+    { 
+        public int i, x, y; 
+    }; 
 
     private void waitClick()
     {
-        //moves[3,4] = true;
-        BoardHighlights.Instance.HighlightAllowedMoves(selectedCharacter.PossibleMoves());
-        if (Input.GetMouseButtonDown(0))
+        input[] inputs = new input[numPlayers];
+        for (int i = 0; i < numPlayers; i++)
         {
-            if (selectionX >= 0 && selectionY >= 0)
+            BoardHighlights.Instance.HighlightAllowedMoves(selectedCharacter.PossibleMoves());
+            if (Input.GetMouseButtonDown(0) && (selectionX >= 0 && selectionY >= 0))
             {
-                MoveCharacter(selectionX,selectionY);
+                input temp;
+                temp.i = i; temp.x = selectionX; temp.y = selectionY;
+                inputs[i] = temp;
+                //FIXME ???SWitching back and forth instantly dun,nowhuy
+                //System.Threading.Thread.Sleep(1000)
+                SwitchPlayer();System.Threading.Thread.Sleep(100);
             }
         }
-        
-    }
 
-    private void DisplayPlayerTurn()
+
+    }
+    
+    private void ReceivePlayerActions()
     {
+        //waitClick();
 
     }
+
     private void SwitchPlayer()    //TEMP
     {
         if (selectedCharacter == Characters[numPlayers-1])
@@ -86,14 +99,17 @@ public class BoardManager : MonoBehaviour
 
     private void MoveCharacter(int x, int y)
     {
-
         if(selectedCharacter.moves[x,y])
         {
+            //FIXME
             //Characters[selectedCharacter.CurrentX, selectedCharacter.CurrentY] = null;
             selectedCharacter.transform.position = GetTileCenter(x,y);
             selectedCharacter.SetPosition(x,y);
-            //Characters[x,y] = selectedCharacter;    
-            SwitchPlayer(); 
+            selectedCharacter.Health--;
+            for (int i = 0; i < numPlayers && i != selectedCharacter.getIndex(); i++)
+            {
+                Debug.Log("INDEX " + i);
+            }
         }
  
     }
@@ -122,6 +138,8 @@ public class BoardManager : MonoBehaviour
         //Debug.Log("GO DONE");
         go.transform.SetParent(transform);
         Characters[index] = go.GetComponent<Character> (); 
+        
+        //pbs[index] = public ProgressBar     
         /*if (go.GetComponent<Character>() == null){
         Debug.Log("NULl");
         }
@@ -131,8 +149,12 @@ public class BoardManager : MonoBehaviour
         Characters[index].SetDimensions(H,W);
         Characters[index].SetSpeed(S);
         Characters[index].CheckMoves();
+        Characters[index].SetHealth(100);
+        Characters[index].SetIndex(index);
+
+        //pbs[index].BarValue = 75;
         activePlayerChar.Add(go);
-        numPlayers++;       
+        numPlayers++;
         //Characters[x,y].PrintCoordinates();
     }
 
@@ -141,16 +163,18 @@ public class BoardManager : MonoBehaviour
     {
         //Debug.Log("GO DONE");
         activePlayerChar = new List<GameObject> ();
-        Characters = new Character[2];      
+        Characters = new Character[2];
+        PBS = new ProgressBar[2];
         //RANDOM SPAWN POINTS, SPECIFIC TO MAP SPAWN BOUNDARIES==================================================`          
         SpawnPlayer(0,3,4,Height,Width,2);
+        PBS[0] = pb1; PBS[1] = pb2;
         //Debug.Log("numplayers = " + numPlayers.ToString() + " after spawning all players");
         //numPlayers++; Move to SpawnPlayer
         //Debug.Log("numplayers = " + numPlayers.ToString());
         SpawnPlayer(1,6,6,Height,Width,2);
         //numPlayers++; MOVED TO SpawnPlayer
         
-        //Debug.Log("numplayers = " + numPlayers.ToString() + " after spawning all players");
+        //Debug.Log("numPlayers = " + numPlayers.ToString() + " after spawning all players");
     } 
 
         private Vector3 GetTileCenter(int x, int z)
@@ -189,4 +213,19 @@ public class BoardManager : MonoBehaviour
                 Vector3.forward * selectionY + Vector3.right * (selectionX + 1));
         }
     }
+
+    private void UpdateHealth()
+    {
+        //int arrlen = 0; int i = 0;
+        //while (Characters[i] != null){
+           // arrlen++;
+            //i++;
+       // }
+            PBS[0].BarValue = Characters[0].Health;
+            PBS[1].BarValue = Characters[1].Health;
+            //pb2.BarValue = 69;
+        }
+
+
+    
 }
